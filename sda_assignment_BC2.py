@@ -31,7 +31,7 @@ def worker(bc1_from_rindex, bc1_to_rindex, bc1_from_cindex, bc1_to_cindex, maxco
 
 threads = []
 operdir = "gas-sensor-array-temperature-modulation/"
-all_files = glob.glob(os.path.join(operdir, "sample_10003.csv"))  # "20160930_203718.csv"))
+all_files = glob.glob(os.path.join(operdir, "20160930_203718.csv"))
 
 df = pd.concat((pd.read_csv(f, header=0) for f in all_files))
 
