@@ -67,6 +67,3 @@ for i in range(1, thread_num + 1):
 print((time.process_time() - start) / 60, " minutes taken to complete BC1.")
 
 df.to_csv("result_of_run.csv")
-bc1_from_row += row_blocks
-bc1_to_row += row_blocks
-
