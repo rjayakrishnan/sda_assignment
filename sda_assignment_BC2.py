@@ -4,6 +4,7 @@ import glob
 import numpy as np
 import time
 import threading
+import timeit
 
 df = pd.DataFrame()
 
@@ -12,16 +13,17 @@ def func(rindx, cindx):
     return (cindx * np.random.rand()) + rindx
 
 
-def worker(bc1_from_rindex, bc1_to_rindex, bc1_from_cindex, bc1_to_cindex, maxcols):
+def worker(bc2_from_rindex, bc2_to_rindex, bc2_from_cindex, bc2_to_cindex, maxcols, threadnum):
 
-    # if bc1_from_rindex > maxrows:
+    # if bc2_from_rindex > maxrows:
     #     return
-    print("col block", bc1_from_cindex, "to", bc1_to_cindex, "being processed")
-    for row in range(bc1_from_rindex, bc1_to_rindex):
-        if row >= bc1_to_rindex:
+    print("Thread ", threadnum, ": col block", bc2_from_cindex, "to", bc2_to_cindex, ". Rows between", bc2_from_rindex,
+          "to", bc2_to_rindex, "being processed")
+    for row in range(bc2_from_rindex, bc2_to_rindex):
+        if row >= bc2_to_rindex:
             return
         else:
-            for col in range(bc1_from_cindex, bc1_to_cindex):
+            for col in range(bc2_from_cindex, bc2_to_cindex):
                 if col >= maxcols:
                     return
                 else:
@@ -46,20 +48,20 @@ offset = ncols % thread_num
 col_blocks = int((ncols + offset) / thread_num)
 print("column blocks  = ", col_blocks)
 
-bc1_from_row = 0
-bc1_to_row = nrows
+bc2_from_row = 0
+bc2_to_row = nrows
 
-bc1_from_col = 0
-bc1_to_col = col_blocks
-
-start = time.process_time()
+bc2_from_col = 0
+bc2_to_col = col_blocks
+print("Start time of processing : ", time.ctime())
+start = timeit.default_timer
 for i in range(1, thread_num + 1):
-    t = threading.Thread(target=worker, args=(bc1_from_row, bc1_to_row, bc1_from_col, bc1_to_col, ncols))
+    t = threading.Thread(target=worker, args=(bc2_from_row, bc2_to_row, bc2_from_col, bc2_to_col, ncols, i))
     threads.append(t)
     t.start()
-
-    bc1_from_col += col_blocks
-    bc1_to_col += col_blocks
+    time.sleep(1)
+    bc2_from_col += col_blocks
+    bc2_to_col += col_blocks
 
     if i == thread_num:
         t.join()
@@ -67,7 +69,9 @@ for i in range(1, thread_num + 1):
     else:
         pass
 
-print((time.process_time() - start) / 60, " minutes taken to complete BC2.")
+print("All threads completed processing : ", time.ctime())
+stop = timeit.default_timer()
+print((stop - start) / 60, " minutes taken to complete BC2.")
 
 df.to_csv("result_of_run_bc2.csv")
 
