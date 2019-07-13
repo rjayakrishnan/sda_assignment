@@ -4,7 +4,7 @@ import glob
 import numpy as np
 import time
 import threading
-
+import timeit
 df = pd.DataFrame()
 
 
@@ -12,11 +12,11 @@ def func(rindx, cindx):
     return (cindx * np.random.rand()) + rindx
 
 
-def worker(bc1_from_rindex, bc1_to_rindex, bc1_from_cindex, bc1_to_cindex, maxrows):
+def worker(bc1_from_rindex, bc1_to_rindex, bc1_from_cindex, bc1_to_cindex, maxrows, threadnum):
 
     # if bc1_from_rindex > maxrows:
     #     return
-    print("Row block", bc1_from_rindex, "to", bc1_to_rindex, "being processed")
+    print("Thread ", threadnum, ": Row block", bc1_from_rindex, "to", bc1_to_rindex, "being processed")
     for row in range(bc1_from_rindex, bc1_to_rindex):
         if row >= maxrows:
             return
@@ -49,12 +49,13 @@ bc1_to_row = row_blocks
 bc1_from_col = 0
 bc1_to_col = ncols
 
-start = time.process_time()
+print("Start time of processing : ", time.ctime())
+start = timeit.default_timer()
 for i in range(1, thread_num + 1):
-    t = threading.Thread(target=worker, args=(bc1_from_row, bc1_to_row, bc1_from_col, bc1_to_col, nrows))
+    t = threading.Thread(target=worker, args=(bc1_from_row, bc1_to_row, bc1_from_col, bc1_to_col, nrows, i))
     threads.append(t)
     t.start()
-
+    time.sleep(1)
     bc1_from_row += row_blocks
     bc1_to_row += row_blocks
 
@@ -63,7 +64,8 @@ for i in range(1, thread_num + 1):
         break
     else:
         pass
-
-print((time.process_time() - start) / 60, " minutes taken to complete BC1.")
+print("All threads completed processing : ", time.ctime())
+stop = timeit.default_timer()
+print((stop - start) / 60, " minutes taken to complete BC1.")
 
 df.to_csv("result_of_run.csv")
